@@ -23,26 +23,13 @@ track properties (ex. `identifier.property`), see below for more info.
 
 ## I configured {babel,eslint,flow,webpack,etc} to avoid '../' in my imports. How can I configure `js-hyperclick`?
 
-First, I think it's a bad idea to do that and I never configure my projects this
-way. In a twitter conversation to see if we could standardize this across
-projects some good points were made:
+`js-hyperclick` uses `project-manager` to get project-specific configuration.
+If you keep your common modules in `src/lib` you can add this to your
+`projects.cson` project entry (search for `Project Manager: Edit Projects` in the Command
+Palette to open the `projects.cson`):
 
-> @nodkz the module loader is locked (in node anyways) so any feature additions should be rejected
->
-> -[@evanhlucas](https://twitter.com/evanhlucas/status/771750602967703561)
-
-and
-
-> @nodkz @left_pad @izs @slicknet @zpao I think this is at odds with Node resolution mechanism so it likely won’t happen.
->
-> -[@dan_abramov](https://twitter.com/dan_abramov/status/771741318129324032)
-
-If you're still set on custom module directories, there is a way to configure
-it. If you keep your common modules in `src/lib` you can add this to your
-`package.json`:
-
-```json
-"moduleRoots": [ "src/lib" ],
+```cson
+moduleRoots: [ "src/lib" ]
 ```
 
 With that in place `require('foo')` or `import 'foo'` with both locate your `src/lib/foo` module.

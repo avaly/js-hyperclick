@@ -3,6 +3,7 @@
 /* eslint-env jasmine */
 import path from "path"
 import { resolveModule } from "../lib/core"
+import * as projectManager from "../lib/core/project-manager"
 import type { Resolved } from "../lib/types"
 
 describe("resolveModule", () => {
@@ -115,29 +116,84 @@ describe("resolveModule", () => {
     expect(actual).toEqual(expected)
   })
 
-  it(`resolve using moduleRoots in project.json`, () => {
+  it("custom file extensions", () => {
     const suggestion = {
-      moduleName: "parse-code",
+      moduleName: "./fixtures/custom-extension-2",
     }
     const expected: Resolved = {
       type: "file",
-      filename: path.join(__dirname, "../lib/core/parse-code.js"),
+      filename: path.join(__dirname, "./fixtures/custom-extension-2.jsx"),
+    }
+    const options = {
+      extensions: [".js", ".json", ".node", ".jsx"],
     }
 
     const actual = resolveModule(__filename, suggestion, options)
     expect(actual).toEqual(expected)
   })
 
-  it(`resolving when there is no package.json`, () => {
+  it("works with project-manager", () => {
     const suggestion = {
-      moduleName: "parse-code",
+      moduleName: "types",
+    }
+    const expected: Resolved = {
+      type: "file",
+      filename: path.join(__dirname, "./fixtures/types.js"),
+    }
+
+    spyOn(projectManager, "getProjectProps").andReturn({
+      paths: [__dirname],
+      moduleRoots: [path.join(__dirname, "./fixtures")],
+    })
+
+    const actual = resolveModule(
+      path.resolve(__dirname + "/.."),
+      suggestion,
+      options,
+    )
+    expect(projectManager.getProjectProps).toHaveBeenCalled()
+    expect(actual).toEqual(expected)
+  })
+
+  it("resolves undefined for project without moduleRoots", () => {
+    const suggestion = {
+      moduleName: "types",
     }
     const expected: Resolved = {
       type: "file",
       filename: undefined,
     }
-    const actual = resolveModule("/foo.js", suggestion, options)
 
+    spyOn(projectManager, "getProjectProps").andReturn({
+      paths: [__dirname],
+    })
+
+    const actual = resolveModule(
+      path.resolve(__dirname + "/.."),
+      suggestion,
+      options,
+    )
+    expect(projectManager.getProjectProps).toHaveBeenCalled()
+    expect(actual).toEqual(expected)
+  })
+
+  it("resolves undefined for unexisting project", () => {
+    const suggestion = {
+      moduleName: "types",
+    }
+    const expected: Resolved = {
+      type: "file",
+      filename: undefined,
+    }
+
+    spyOn(projectManager, "getProjectProps")
+
+    const actual = resolveModule(
+      path.resolve(__dirname + "/.."),
+      suggestion,
+      options,
+    )
+    expect(projectManager.getProjectProps).toHaveBeenCalled()
     expect(actual).toEqual(expected)
   })
 })
